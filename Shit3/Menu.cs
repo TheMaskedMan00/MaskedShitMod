@@ -27,8 +27,7 @@ using UnhollowerBaseLib.Runtime;
 using UnhollowerRuntimeLib.XrefScans;
 using UnityEngine.Events;
 using VRC;
-using ShitMov;
-using Shit_UserUtils;
+
 
 
 
@@ -39,66 +38,144 @@ namespace Shit
 {
     public class ShitUi : MelonMod
     {
+        public static void Items()
+        { 
+                VRC.SDKBase.VRC_Pickup[] array = Resources.FindObjectsOfTypeAll<VRC.SDKBase.VRC_Pickup>().ToArray<VRC.SDKBase.VRC_Pickup>();
+                for (int i = 0; i < array.Length; i++)
+                {
+                    bool flag = array[i].gameObject;
+                    if (flag)
+                    {
+                        Networking.LocalPlayer.TakeOwnership(array[i].gameObject);
+                        array[i].transform.localPosition = new Vector3(0f, 0.3f, 0f);
+                        Transform transform = array[i].transform;
+                        transform.position = VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position + new Vector3(0f, 0.1f, 0f);
+                    }
+                }
+
+            }
+        private static bool fly;
+        private static bool isInVR = false;
+        private static VRCPlayer LocalPlayer;
+        private static Vector3 oldGravity;
+        private static bool noclip;
+        private static bool blockedKeyInput = false;
+        private static IEnumerator BlockKeyInput()
+        {
+            blockedKeyInput = true;
+            yield return new WaitForSeconds(3f);
+            blockedKeyInput = false;
+        }
+
 
         public override void OnUpdate()
         {
+            if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.G))
+            {
+
+                MelonLogger.Msg("You just pressed Control G");
+                if (!noclip)
+                {
+                    var Colliders = Resources.FindObjectsOfTypeAll<Collider>();
+                    noclip = true;
+                    foreach (Collider collider in Colliders)
+                        if (collider.name.Contains("VRCPlayer"))
+                            collider.enabled = true;
+                }
+                else
+                {
+                    var Colliders = Resources.FindObjectsOfTypeAll<Collider>();
+                    noclip = false;
+                    foreach (Collider collider in Colliders)
+                        if (collider.name.Contains("VRCPlayer"))
+                            collider.enabled = true;
+                }
+            }
+            if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.F))
+            {
+                MelonLogger.Msg("You just pressed Control F");
+                if (!fly)
+                {
+                    fly = true;
+                    LocalPlayer = VRCPlayer.field_Internal_Static_VRCPlayer_0;
+                    isInVR = LocalPlayer.prop_VRCPlayerApi_0.IsUserInVR();
+                    oldGravity = Physics.gravity;
+                    Physics.gravity = (Vector3.zero);
+                    Networking.LocalPlayer.UseLegacyLocomotion();
+                }
+                else
+                {
+                    fly = false;
+                    Physics.gravity = oldGravity;
+                }
+            }
+            if (fly)
+            {
+                VRCPlayer LocalPlayer = VRCPlayer.field_Internal_Static_VRCPlayer_0;
+                float FlySpeed = 5;
+                if (isInVR)
+                {
+                    if (Math.Abs(Input.GetAxis("Vertical")) != 0f)
+                        LocalPlayer.transform.position += LocalPlayer.transform.forward * FlySpeed * Time.deltaTime * Input.GetAxis("Vertical");
+                    if (Math.Abs(Input.GetAxis("Horizontal")) != 0f)
+                        LocalPlayer.transform.position += LocalPlayer.transform.right * FlySpeed * Time.deltaTime * Input.GetAxis("Horizontal");
+                    if (Input.GetAxis("Oculus_CrossPlatform_SecondaryThumbstickVertical") < 0f)
+                        LocalPlayer.transform.position += LocalPlayer.transform.up * FlySpeed * Time.deltaTime * Input.GetAxisRaw("Oculus_CrossPlatform_SecondaryThumbstickVertical");
+                    if (Input.GetAxis("Oculus_CrossPlatform_SecondaryThumbstickVertical") > 0f)
+                        LocalPlayer.transform.position += LocalPlayer.transform.up * FlySpeed * Time.deltaTime * Input.GetAxisRaw("Oculus_CrossPlatform_SecondaryThumbstickVertical");
+                }
+                else
+                {
+                    bool key = Input.GetKey(KeyCode.Q);
+                    if (key)
+                    {
+                        VRCPlayer.field_Internal_Static_VRCPlayer_0.gameObject.transform.position = VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position - new Vector3(0f, FlySpeed * Time.deltaTime, 0f);
+                    }
+                    bool key2 = Input.GetKey(KeyCode.E);
+                    if (key2)
+                    {
+                        VRCPlayer.field_Internal_Static_VRCPlayer_0.gameObject.transform.position = VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position + new Vector3(0f, FlySpeed * Time.deltaTime, 0f);
+                    }
+                    bool key3 = Input.GetKey(KeyCode.W);
+                    if (key3)
+                    {
+                        VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position += VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.forward * FlySpeed * Time.deltaTime;
+                    }
+                    bool key4 = Input.GetKey(KeyCode.A);
+                    if (key4)
+                    {
+                        VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position += VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.right * -1f * FlySpeed * Time.deltaTime;
+                    }
+                    bool key5 = Input.GetKey(KeyCode.S);
+                    if (key5)
+                    {
+                        VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position += VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.forward * -1f * FlySpeed * Time.deltaTime;
+                    }
+                    bool key6 = Input.GetKey(KeyCode.D);
+                    if (key6)
+                    {
+                        VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position += VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.right * FlySpeed * Time.deltaTime;
+                    }
+                }
+            }
             if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.J))
             {
                 Networking.LocalPlayer.SetJumpImpulse(3f);
                 MelonLogger.Msg("You just pressed Control J");
             }
-            if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.G))
+            if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.K))
             {
-                MelonLogger.Msg("You just pressed Control G");
-                bool fly = ShitUi.Fly;
-                if (fly)
-                {
-                    Physics.gravity = new Vector3(0f, -9.81f, 0f);
-                    ShitUi.Fly = false;
-                }
-                ShitUi.NoClip = !ShitUi.NoClip;
-                Flying.Noclip();
-                Networking.LocalPlayer.UseLegacyLocomotion();
-
+                Networking.LocalPlayer.SetJumpImpulse(3f);
+                MelonLogger.Msg("You just pressed Control K");
+                Items();
             }
-            if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.F))
-            {
-                MelonLogger.Msg("You just pressed Control F");
-                ShitUi.Fly = !ShitUi.Fly;
-                bool noClip = ShitUi.NoClip;
-                if (!noClip)
-                {
-                    Physics.gravity = new Vector3(0f, 0f, 0f);
-                    Networking.LocalPlayer.UseLegacyLocomotion();
 
-    
 
-                }
+        } 
+        }
 
-        } }
         // Token: 0x040003BB RID: 955
-        public static bool Fly = false;
 
-        // Token: 0x040003BC RID: 956
-        public static bool NoClip = false;
-
-        // Token: 0x040003BD RID: 957
-        public static bool Speed = false;
-
-        // Token: 0x040003BE RID: 958
-        public static bool Jump = false;
-
-        // Token: 0x040003BF RID: 959
-        public static float RunSpeed = 16f;
-
-        // Token: 0x040003C0 RID: 960
-        public static float WalkSpeed = 8f;
-
-        // Token: 0x040003C1 RID: 961
-        public static float JumpPower = 8f;
-
-        // Token: 0x040003C2 RID: 962
-        public static float FlySpeed = 6f;
     }
     class Menu
     {
@@ -135,8 +212,10 @@ namespace Shit
             //ExpansionKitApi.GetExpandedMenu(ExpandedMenu.UserQuickMenu).AddSimpleButton("Jump2", () => Networking.LocalPlayer.SetJumpImpulse(3f));
             //ExpansionKitApi.GetExpandedMenu(ExpandedMenu.UserQuickMenu).AddSimpleButton("Jump3", () => MelonLogger.Msg("You just pressed a button"));
         }
-    }
+
 }
+
+
     
 
        
