@@ -7,14 +7,16 @@ Idk I only uploaded this so this guy could help me with the code, I'm new to C# 
 Don't expect this mod to work cause its not finished and its not good.
 
 Features:
-Fly (ctrl F) [has a gliding issue where you keep your velocity when flying, I'm not sure how to fix]
+Fly (ctrl F) [Fixed Gliding Issue]
 
 
 Force jump (Ctrl J) [enable jumping on game worlds like Murder 4 or Kitchen Cooks, useful if you are in a small avatar and can't reach anything]
 
+Bring all items (ctrl K) [in the future i will make it to respawn all items instead, useful if you are playing pool and some asshole with notorius or some other client does an item orbit.
 
 
-I could not figure out how to get my corrutine for UIExpansionkit to work properly so I just used keybinds instead. 
+
+I could not figure out how to get my corrutine for UIExpansionkit to work properly so I just used keybinds instead. [probably going to copy what ares and remod do and hook directly onto the vrchat menu itself]
 
 Coming soon:
 Respawn all pickups(for when some dick with notorius steals all the items while you are playing pool) 
